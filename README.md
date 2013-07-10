@@ -57,6 +57,24 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+Use public_network and bridge to eth1 on host machine. 
+
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.ignore_private_ip = false
+  config.hostmanager.include_offline = true
+  config.vm.define 'example-box' do |node|
+    node.vm.hostname = 'example-box-hostname'
+    node.vm.network :public_network, :bridge => "eth1"
+    node.hostmanager.interface = "eth1"
+  end
+end
+```
+
+
 As a last option, you can use hostmanager as a provisioner.
 This allows you to use the provisioning order to ensure that hostmanager
 runs before or after provisioning. The provisioner will collect hosts from

@@ -59,6 +59,27 @@ module VagrantPlugins
         end
       end
 
+
+      def get_interface_ip_address(machine)
+        
+        ip = nil
+        # command =  "ip addr list #{machine.config.hostmanager.interface} |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1"
+        command = machine.config.hostmanager.interface_ip_command % machine.config.hostmanager.interface
+
+        # Need to create a connection for each machine. Otherwise Vagrant 
+        # is cachine these per call
+        comm = VagrantPlugins::CommunicatorSSH::Communicator.new(machine)
+
+        comm.sudo(command) do |type, data|
+          
+          color = type == :stdout ? :green : :red
+          @machine.env.ui.info(data.chomp, :color => color, :prefix => false)
+
+          ip = data.chomp
+          return ip
+        end
+      end
+
       def get_ip_address(machine)
         ip = nil
         if machine.config.hostmanager.ignore_private_ip != true
@@ -68,6 +89,13 @@ module VagrantPlugins
             next if ip
           end
         end
+        
+        # If the interface has been set and not using private_ip then 
+        # determine the assigned DHCP address via method
+        if @machine && machine.config.hostmanager.ignore_private_ip == true && machine.config.hostmanger.interface 
+          ip = get_interface_ip_address(machine)
+        end
+
         ip || (machine.ssh_info ? machine.ssh_info[:host] : nil)
       end
 

@@ -7,6 +7,17 @@ module VagrantPlugins
       attr_accessor :aliases
       attr_accessor :include_offline
 
+      # The interface to query for ip, used to determine the Machines IP
+      # 
+      # @return [String]
+      attr_accessor :interface
+
+      # The command to run on the target host machine to determine the IP for 
+      # configured interface
+      #
+      # @return [String]
+      attr_accessor :interface_ip_command
+
       alias_method :enabled?, :enabled
       alias_method :include_offline?, :include_offline
       alias_method :manage_host?, :manage_host
@@ -16,6 +27,9 @@ module VagrantPlugins
         @manage_host = UNSET_VALUE
         @ignore_private_ip = UNSET_VALUE
         @include_offline = UNSET_VALUE
+        @interface = UNSET_VALUE
+        @interface_ip_command = "ip addr list %s | grep 'inet ' | cut -d' ' -f6 | cut -d/ -f1"
+
         @aliases = []
       end
 
@@ -24,6 +38,7 @@ module VagrantPlugins
         @manage_host = false if @manage_host == UNSET_VALUE
         @ignore_private_ip = false if @ignore_private_ip == UNSET_VALUE
         @include_offline = false if @include_offline == UNSET_VALUE
+        @interface = nil if @interface == UNSET_VALUE
         @aliases = [ @aliases ].flatten
       end
 
